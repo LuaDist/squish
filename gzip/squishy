@@ -1,0 +1,5 @@
+Option "minify-level" "full"
+Option "uglify"
+Option "uglify-level" "full"
+Main "deflatelua.lua"
+Output "gunzip.lua"

@@ -1,0 +1,126 @@
+#!/usr/bin/env lua
+
+if not arg[1] or arg[1]:match("%-%-?help") or arg[1]:match("^[/-]%?$") then
+	print "make_squishy - Generate squishy files for your projects"
+	print ""
+	print(" Usage: "..arg[0].." FILE1 FILE2 FILE...");
+	print ""
+	print "make_squishy will scan the given files for require() calls, and convert the "
+	print "found modules into a squishy file, 'squishy.new'. make_squishy automatically scans "
+	print "the modules it finds, looking for further dependencies. To disable this, use "
+	print "the --no-recursion option."
+	return;
+end
+
+
+local short_opts = { v = "verbose", vv = "very_verbose", o = "output", q = "quiet", qq = "very_quiet", f = "force" }
+local files, opts = {}, {};
+local scanned_files, modules = {}, {};
+
+for _, opt in ipairs(arg) do
+	if opt:match("^%-") then
+		local name = opt:match("^%-%-?([^%s=]+)()")
+		name = (short_opts[name] or name):gsub("%-+", "_");
+		if name:match("^no_") then
+			name = name:sub(4, -1);
+			opts[name] = false;
+		else
+			opts[name] = opt:match("=(.*)$") or true;
+		end
+	else
+		table.insert(files, opt);
+	end
+end
+
+if opts.very_verbose then opts.verbose = true; end
+if opts.very_quiet then opts.quiet = true; end
+
+local noprint = function () end
+local print_err, print_info, print_verbose, print_debug = noprint, noprint, noprint, noprint;
+
+if not opts.very_quiet then print_err = print; end
+if not opts.quiet then print_info = print; end
+if opts.verbose or opts.very_verbose then print_verbose = print; end
+if opts.very_verbose then print_debug = print; end
+
+if not opts.force then
+	local squishy = io.open("squishy.new", "r");
+	if squishy then
+		print_err("There is already a squishy file in this directory, use -f to force overwriting it");
+		squishy:close();
+		os.exit(1);
+	end
+end
+
+local squishy, err = io.open("squishy.new", "w+");
+if not squishy then
+	print_err("Couldn't open squishy file for writing: "..tostring(err));
+	os.exit(1);
+end
+
+local LUA_DIRSEP = package.config:sub(1,1);
+local LUA_PATH_MARK = package.config:sub(5,5);
+
+local base_path = (files[1]:match("^(.-)"..LUA_DIRSEP.."[^"..LUA_DIRSEP.."]*$") or ".").."/";
+
+local package_path = package.path:gsub("[^;]+", function (path)
+		if not path:match("^%"..LUA_DIRSEP) then
+			return base_path..path;
+		end
+	end):gsub("/%./", "/");
+local package_cpath = package.cpath:gsub("[^;]+", function (path)
+		if not path:match("^%"..LUA_DIRSEP) then
+			return base_path..path;
+		end
+	end):gsub("/%./", "/");
+
+
+function scan_file(outfile, scanfile)
+	for line in io.lines(scanfile) do
+		for _, module in (" "..line):gmatch("[^%w_]require%s*%(?([\"'])(.-)%1") do
+			if not modules[module] then
+				local binary;
+				modules[module] = true;
+				local filename = resolve_module(module, package_path);
+				if false and not filename then
+					binary = true;
+					filename = resolve_module(module, package_cpath);
+				end
+				if not filename then
+					print_info("Couldn't resolve module '"..module.."' to a file (required in "..scanfile..")");
+				elseif opts.recursion ~= false and not scanned_files[filename] then
+					scanned_files[filename] = true;
+					table.insert(files, filename);
+				end
+				if filename then
+					outfile:write((binary and "Binary" or ""), string.format([[Module %q %q]], module, filename:gsub("^"..base_path:gsub("%p", "%%%1"), "")), "\n");
+				end
+			end
+		end
+	end
+end
+
+
+function resolve_module(name, path)
+        name = name:gsub("%.", LUA_DIRSEP);
+        for c in path:gmatch("[^;]+") do
+                c = c:gsub("%"..LUA_PATH_MARK, name);
+                print_debug("Testing: "..c)
+                local f = io.open(c);
+                if f then
+                        f:close();
+                        return c;
+                end
+        end
+        return nil; -- not found
+end
+
+for _, filename in ipairs(files) do
+	squishy:write(string.format([[Main %q]], filename:gsub("^"..base_path:gsub("%p", "%%%1"), "")), "\n");
+end
+squishy:write("\n");
+for _, filename in ipairs(files) do
+	scanned_files[filename] = true;
+	print_verbose("Found:", filename);
+	scan_file(squishy, filename)
+end

@@ -1,0 +1,47 @@
+
+-- Set this option, same as if user specified
+-- '--executable' on the command-line. Can be 
+-- disabled by user with '--no-executable'
+Option "executable"
+
+-- Output filename
+Output "squish"
+
+-- This is normal/main script
+Main "squish.lua"
+
+-- Add minify extension if asked to
+if GetOption "with-minify" then
+	Module "optlex"		"minify/optlex.lua"
+	Module "optparser"	"minify/optparser.lua"
+	Module "llex"		"minify/llex.lua"
+	Module "lparser"	"minify/lparser.lua"
+
+	Main "minify/squish.minify.lua"
+end
+
+-- Compress Lua scripts (an excellent hack :) )
+if GetOption "with-uglify" then
+	Module "llex"		"uglify/llex.lua"
+	
+	Main "uglify/squish.uglify.lua"
+end
+
+-- Compile output files to Lua bytecode
+if GetOption "with-compile" then
+	Module "minichunkspy" "compile/minichunkspy.lua"
+	Main "compile/squish.compile.lua"
+end
+
+if GetOption "with-virtual-io" then
+	Resource "vio" "vio/vio.lua"
+end
+
+if GetOption "with-gzip" then
+	Resource "gunzip.lua" "gunzip.lua"
+	Main "gzip/squish.gzip.lua"
+end
+
+if GetOption "with-debug" then
+	Resource "squish.debug" "squish.debug"
+end

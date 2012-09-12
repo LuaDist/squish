@@ -1,0 +1,9 @@
+Option "minify-locals" (false)
+Option "minify-level" "full"
+
+Module "minichunkspy" "minichunkspy.lua"
+
+Main "squish.debug.lua"
+
+Output "squish.debug"
+

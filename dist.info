@@ -10,5 +10,5 @@ url = "http://code.matthewwild.co.uk/squish"
 maintainer = "Peter Drahoš"
 
 depends = {
-	"lua >= 5.1"
+	"lua ~> 5.1"
 }

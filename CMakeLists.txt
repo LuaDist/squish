@@ -12,7 +12,7 @@ include ( lua )
 find_package ( Lua )
 
 # Squish itself
-add_custom_command ( OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/squish
+add_custom_target ( bootstrap ALL
 	COMMAND ${LUA_EXECUTABLE} squish.lua -q --with-minify --with-uglyfy --with-compile --with-virtual-io
 	COMMAND ${LUA_EXECUTABLE} squish -q gzip
 	COMMAND ${LUA_EXECUTABLE} squish -q debug
@@ -21,5 +21,4 @@ add_custom_command ( OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/squish
 )
 
 install_lua_executable ( squish ${CMAKE_CURRENT_SOURCE_DIR}/squish )
-
 install_data ( README COPYRIGHT CHANGES )

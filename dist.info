@@ -1,0 +1,14 @@
+--- This file is part of LuaDist project
+
+name = "squish"
+version = "0.2.0"
+
+desc = "Squish Lua libraries and apps into a single compact file."
+author = "Matthew Wild"
+license = "MIT/X11"
+url = "http://code.matthewwild.co.uk/squish""
+maintainer = "Peter Drahoš"
+
+depends = {
+	"lua >= 5.1"
+}

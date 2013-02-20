@@ -1,0 +1,15 @@
+0.2.0 - 2010-10-10
+	+ New gzip filter to produce compressed self-decompressing scripts
+	+ New --uglify-level=full to replace long repeated identifiers and string literals
+	- Fix for traceback when modules can't be found on filesystem
+	- Fixes for handling binary resources
+	- Ensure output file on the command-line always overrides filename in squishy file
+	- uglify filter: Preserve original module's return value(s)
+	- compile filter: Update minichunkspy.lua
+	- Properly handle modules that don't end with whitespace
+	- uglify filter: Fix logic that decides whether a file is safe to uglify
+	- make_squishy tool: Numerous small fixes and improvements
+	- Only prepend project base path to relative module paths
+
+0.1.0 - 2009-07-27
+	+ Initial release.

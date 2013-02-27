@@ -1,0 +1,26 @@
+type = "x86_64"
+arch = "Ubuntu"
+author = "Matthew Wild"
+depends = {
+[[lua ~> 5.1]],
+}
+
+desc = "Squish Lua libraries and apps into a single compact file."
+version = "0.2.0"
+maintainer = "Peter Drahoš"
+files = {
+Runtime = {
+[[bin/squish]],
+}
+,
+Data = {
+[[share/squish/README]],
+[[share/squish/COPYRIGHT]],
+[[share/squish/CHANGES]],
+}
+,
+}
+
+license = "MIT/X11"
+name = "squish"
+url = "http://code.matthewwild.co.uk/squish"
